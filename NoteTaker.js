@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require('fs');
+const { json } = require("express");
 
 const webIndex = `${__dirname}/public/index.html`;
 const webNotes = `${__dirname}/public/notes.html`;
@@ -39,6 +40,8 @@ app.post("/api/notes", (req, res) => {
         if (errRead) throw errRead;
 
         let jsonData = JSON.parse(dataRead);
+        let dataMsg;
+        let recJsonData;
 
         jsonData.forEach((element, index, array) => {
             if (index == array.length - 1) {
@@ -49,39 +52,31 @@ app.post("/api/notes", (req, res) => {
 
         if (newNote.length == undefined) {
 
-            if (newNote.hasOwnProperty("title") && newNote.hasOwnProperty("text"))
-                jsonData.push({id : NextId, title: newNote.title, text : newNote.text});
-            else {
-                let message = apiPostError();
-                res.send(message);
-            }
+            console.log("POST single object");
+            dataMsg = getPostData(newNote);
         }
         else {
             
-            newNote.forEach(element => {
-                
-                console.log("=================");
-                console.log("Individual element");
-                console.log(`title: ${element.title}, text : ${element.text}`);
-                console.log("=================");
+            console.log("POST multiple objects");
+            newNote.forEach(element => dataMsg = getPostData(element));            
+        }
 
-                if (element.hasOwnProperty("title") && element.hasOwnProperty("text")) {
-                
-                    jsonData.push({id : NextId++, title: element.title, text : element.text});
-                    console.log(lastId);
-                }
-                else {
-                    let message = apiPostError();
-                    res.send(message);
-                }
+        try
+        {
+            recJsonData = JSON.parse(dataMsg);
+            fs.writeFile(dbNotes, recJsonData, (errWrite) => {
+                if (errWrite) throw errWrite;
             });
-
             
+            res.send(recJsonData);
+        }
+        catch
+        {
+            console.log("Variable is not a JSON object: ");
+            console.log(dataMsg);
+            res.send(dataMsg);
         }
         
-        console.log("Line 82");
-        console.log(jsonData);
-
         // fs.writeFile(dbNotes, dataWrite, (errWrite) => {
         //     if (errWrite) throw errWrite;
         // });
@@ -89,31 +84,39 @@ app.post("/api/notes", (req, res) => {
     });
 });
 
+function getPostData(noteData) {
+
+    console.log("=== Inside get post data function ===");
+    let allData = [];
+    let errorMsg = "";
+
+    //#region Checks if the data has "title" and "text" in the request body
+        if (noteData.hasOwnProperty("title") && noteData.hasOwnProperty("text")) {
+            allData.push({id : NextId++, title: noteData.title, text : noteData.text});
+        }
+        else {
+            errorMsg = apiPostError();
+        }
+    //#endregion
+
+    console.log("=== Ending get post data function ===");
+    //#region Return data
+        if (allData.length > 0) {
+            return JSON.stringify(allData);
+        }
+        else {
+            return errorMsg;
+        }
+    //#endregion
+
+}
+
 function apiPostError() {
     
-    let generalMsgError = "Unable to add data due to incorrect/missing keys { title: '...', text: '...' }";
+    let generalMsgError = "Unable to add data due to incorrect/missing parameters:\nSingle object ~ { title: '..', text: '..' }\nMultiple objects ~ [ { title: '..', text: '..' }, { title: '..', text: '..' } ]";
     console.log(generalMsgError);
 
     return generalMsgError;
-}
-
-function getNextId() {
-
-    let lastId;
-
-    fs.readFile(dbNotes, "utf8", (err, data) => {
-        if (err) throw err;
-
-        let jsonData = JSON.parse(data);
-
-        jsonData.forEach((element, index, array) => {
-            if (index == (array.length - 1))
-                lastId = element.id;
-        });
-
-        NextId = ++lastId;
-
-    });
 }
 
 // Initialize-start Express instance
