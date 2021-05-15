@@ -1,7 +1,12 @@
 [
     {
         "id" : 1,
-        "title":"Test Title",
-        "text":"Test text"
+        "title":"Welcome",
+        "text":"Write yourself a note"
+    },
+    {
+        "id" : 2,
+        "title":"My note title",
+        "text":"Note information"
     }
 ]
