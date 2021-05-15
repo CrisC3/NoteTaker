@@ -1,7 +1,6 @@
 const express = require("express");
 const path = require("path");
 const fs = require('fs');
-const { json } = require("express");
 
 const webIndex = `${__dirname}/public/index.html`;
 const webNotes = `${__dirname}/public/notes.html`;
@@ -11,6 +10,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 let NextId = "";
+let allNotes;
 
 app.use("/static", express.static("public/assets"));
 
@@ -29,91 +29,66 @@ app.get("/api/notes", (req, res) => {
 app.post("/api/notes", (req, res) => {
     
     const newNote = req.body;
-
-    console.log("=================");
-    console.log("request body");
-    console.log(newNote);
-    console.log("newNote length = " + newNote.length);
-    console.log("=================");
     
     fs.readFile(dbNotes, "utf8", (errRead, dataRead) => {
         if (errRead) throw errRead;
 
-        let jsonData = JSON.parse(dataRead);
-        let dataMsg;
-        let recJsonData;
+        allNotes = JSON.parse(dataRead) || [];
 
-        jsonData.forEach((element, index, array) => {
+        allNotes.forEach((element, index, array) => {
             if (index == array.length - 1) {
                 lastId = element.id;
                 NextId = lastId + 1;
             }
         });
 
-        if (newNote.length == undefined) {
+        console.log("=== All existing notes ===");
+        console.log(allNotes);
+        console.log("=== New note(s) ===");
+        console.log(newNote);
+        console.log("===");
+        console.log("Next ID is: " + NextId);
 
+        if (newNote.length == undefined) {
             console.log("POST single object");
-            dataMsg = getPostData(newNote);
+            getPostData(newNote);
         }
         else {
             
             console.log("POST multiple objects");
-            newNote.forEach(element => dataMsg = getPostData(element));            
+            newNote.forEach(element => getPostData(element));            
         }
 
-        try
-        {
-            recJsonData = JSON.parse(dataMsg);
-            fs.writeFile(dbNotes, recJsonData, (errWrite) => {
-                if (errWrite) throw errWrite;
-            });
-            
-            res.send(recJsonData);
-        }
-        catch
-        {
-            console.log("Variable is not a JSON object: ");
-            console.log(dataMsg);
-            res.send(dataMsg);
-        }
+        console.log("=== Line 63 ===");
+        console.log(allNotes);
+
+        fs.writeFile(dbNotes, JSON.stringify(allNotes, null, 4), (errWrite) => {
+            if (errWrite) throw errWrite;
+            console.log("Wrote data");
+        });
         
-        // fs.writeFile(dbNotes, dataWrite, (errWrite) => {
-        //     if (errWrite) throw errWrite;
-        // });
-
     });
 });
 
 function getPostData(noteData) {
 
-    console.log("=== Inside get post data function ===");
-    let allData = [];
+    console.log("=== Inside getPostData ===");
     let errorMsg = "";
 
-    //#region Checks if the data has "title" and "text" in the request body
-        if (noteData.hasOwnProperty("title") && noteData.hasOwnProperty("text")) {
-            allData.push({id : NextId++, title: noteData.title, text : noteData.text});
-        }
-        else {
-            errorMsg = apiPostError();
-        }
-    //#endregion
+    console.log(noteData)
 
-    console.log("=== Ending get post data function ===");
-    //#region Return data
-        if (allData.length > 0) {
-            return JSON.stringify(allData);
-        }
-        else {
-            return errorMsg;
-        }
-    //#endregion
-
+    if (noteData.hasOwnProperty("title") && noteData.hasOwnProperty("text")) {
+        allNotes.push({id : NextId++, title: noteData.title, text : noteData.text});
+    }
+    else {
+        errorMsg = apiPostError(noteData);
+    }
 }
 
-function apiPostError() {
+function apiPostError(noteData) {
     
-    let generalMsgError = "Unable to add data due to incorrect/missing parameters:\nSingle object ~ { title: '..', text: '..' }\nMultiple objects ~ [ { title: '..', text: '..' }, { title: '..', text: '..' } ]";
+    let generalMsgError = "Unable to add data due to incorrect/missing parameters:\nSingle object ~ { title: '..', text: '..' }\nMultiple objects ~ [ { title: '..', text: '..' }, { title: '..', text: '..' } ]\n\n";
+    generalMsgError += JSON.stringify(noteData);
     console.log(generalMsgError);
 
     return generalMsgError;
