@@ -1,3 +1,6 @@
+# custom
+db/db.sample.json
+
 # Logs
 logs
 *.log
