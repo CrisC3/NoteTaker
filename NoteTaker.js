@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 let NextId = "";
-let allNotes;
+let allNotes = [];
 
 app.use("/static", express.static("public/assets"));
 
@@ -33,7 +33,7 @@ app.post("/api/notes", (req, res) => {
     fs.readFile(dbNotes, "utf8", (errRead, dataRead) => {
         if (errRead) throw errRead;
 
-        allNotes = JSON.parse(dataRead) || [];
+        allNotes = JSON.parse(dataRead);
 
         allNotes.forEach((element, index, array) => {
             if (index == array.length - 1) {
@@ -42,40 +42,73 @@ app.post("/api/notes", (req, res) => {
             }
         });
 
-        console.log("=== All existing notes ===");
-        console.log(allNotes);
-        console.log("=== New note(s) ===");
-        console.log(newNote);
-        console.log("===");
-        console.log("Next ID is: " + NextId);
-
         if (newNote.length == undefined) {
-            console.log("POST single object");
+            
             getPostData(newNote);
         }
         else {
             
-            console.log("POST multiple objects");
-            newNote.forEach(element => getPostData(element));            
+            newNote.forEach(element => getPostData(element));
         }
 
-        console.log("=== Line 63 ===");
-        console.log(allNotes);
+        saveToFile();
 
-        fs.writeFile(dbNotes, JSON.stringify(allNotes, null, 4), (errWrite) => {
-            if (errWrite) throw errWrite;
-            console.log("Wrote data");
-        });
+        res.send(newNote);
         
     });
 });
 
+app.delete("/api/notes/:id", (req, res) => {
+
+    let custom = req.params.id;
+    
+    console.log("Request params id = "+ custom);
+    // allNotes.splice(req.params.id, 1);
+
+    allNotes.forEach((element, index, array) => {
+        
+        if (element.id == req.params.id) {
+            
+            array.splice(index, 1);
+        }
+    });
+
+    saveToFile();
+
+});
+
+function readFromFile() {
+
+    const defaultData = [
+        {title: "Welcome", text : "Write yourself a note"},
+        {title: "My Note", text : "You can type more information here"}
+    ];
+
+    fs.readFile(dbNotes, "utf8", (errRead, dataRead) => {
+        if (errRead) throw errRead;
+        allNotes = JSON.parse(dataRead);
+
+        console.log(allNotes.length)
+
+        // if (allNotes.length == 0) {
+        //     defaultData.forEach(element => getPostData(element));
+        //     saveToFile();
+        // }
+    });
+}
+
+function saveToFile() {
+
+    fs.writeFile(dbNotes, JSON.stringify(allNotes, null, 4), (errWrite) => {
+        if (errWrite) throw errWrite;
+    });
+}
+
 function getPostData(noteData) {
 
-    console.log("=== Inside getPostData ===");
-    let errorMsg = "";
+    console.log(noteData);
 
-    console.log(noteData)
+    let errorMsg = "";
 
     if (noteData.hasOwnProperty("title") && noteData.hasOwnProperty("text")) {
         allNotes.push({id : NextId++, title: noteData.title, text : noteData.text});
@@ -89,10 +122,12 @@ function apiPostError(noteData) {
     
     let generalMsgError = "Unable to add data due to incorrect/missing parameters:\nSingle object ~ { title: '..', text: '..' }\nMultiple objects ~ [ { title: '..', text: '..' }, { title: '..', text: '..' } ]\n\n";
     generalMsgError += JSON.stringify(noteData);
-    console.log(generalMsgError);
 
     return generalMsgError;
 }
 
 // Initialize-start Express instance
-app.listen(port, () => console.log(`App listening on PORT ${port}`));
+app.listen(port, () => {
+    console.log(`App listening on PORT ${port}`)
+    readFromFile();
+});

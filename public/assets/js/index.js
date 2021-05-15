@@ -91,6 +91,8 @@ const handleNoteDelete = (e) => {
     getAndRenderNotes();
     renderActiveNote();
   });
+  
+  location.reload();
 };
 
 // Sets the activeNote and displays it
@@ -176,5 +178,7 @@ if (window.location.pathname === '/notes') {
   noteTitle.addEventListener('keyup', handleRenderSaveBtn);
   noteText.addEventListener('keyup', handleRenderSaveBtn);
 }
+
+
 
 getAndRenderNotes();
