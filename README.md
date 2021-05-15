@@ -3,8 +3,6 @@
 ## Licensing:
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://shields.io)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://notetakerc3.herokuapp.com/)
-
 #### Table of Contents
 1. [Description](#description)
 2. [Installation](#installation)
@@ -15,6 +13,8 @@
 
 ## Description
 Note Taker is a web application, which is capable of creating, save and delete notes. The notes are save in a JSON file.
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://notetakerc3.herokuapp.com/)
 
 ## Installation
 nodeJS & npm install
