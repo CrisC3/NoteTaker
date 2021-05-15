@@ -20,13 +20,13 @@ Note Taker is a web application, which is capable of creating, save and delete n
 nodeJS & npm install
 
 ## Usage
-Download repository, open PowerShell/Bash, navigate in PowerShell/Bash into the downloaded repository folder, run "npm install" follow up by "npm start" or "node NoteTaker.js"
+Download repository, open PowerShell/Bash, navigate in PowerShell/Bash into the downloaded repository folder, run "npm install" follow up by "npm start" or "node NoteTaker.js", open localhost:8080 or go to the deployed Heroku link https://notetakerc3.herokuapp.com/
 
 ## Contributing
 This is open source project. Feel free to contribute😊.
 
 ## Tests
-Run "npm start" or "node NoteTaker.js" in the terminal. Answer questions of team members.
+Run "npm start" or "node NoteTaker.js" in the terminal, or go to https://notetakerc3.herokuapp.com/.
 
 ## Questions
 For any questions, you can contact:  
