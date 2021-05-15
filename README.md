@@ -3,6 +3,8 @@
 ## Licensing:
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://shields.io)
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://notetakerc3.herokuapp.com/)
+
 #### Table of Contents
 1. [Description](#description)
 2. [Installation](#installation)
